@@ -1,5 +1,8 @@
 import React from 'react';
 import logo from '../assets/adaptica-logo-white.png';
+import facebookIcon from '../facebook.png';
+import linkedinIcon from '../linkedin.png';
+import instagramIcon from '../instagram.png';
 
 export const Footer: React.FC = () => {
   return (
@@ -14,10 +17,15 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="flex gap-6">
-          {/* Social placeholders */}
-          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-brand-red transition-colors">FB</a>
-          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-brand-red transition-colors">IN</a>
-          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-brand-red transition-colors">LI</a>
+          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors overflow-hidden">
+            <img src={facebookIcon} alt="Facebook" className="w-full h-full object-contain p-1.5" />
+          </a>
+          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors overflow-hidden">
+            <img src={instagramIcon} alt="Instagram" className="w-full h-full object-contain p-1.5" />
+          </a>
+          <a href="#" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors overflow-hidden">
+            <img src={linkedinIcon} alt="LinkedIn" className="w-full h-full object-contain p-1.5" />
+          </a>
         </div>
       </div>
     </footer>
