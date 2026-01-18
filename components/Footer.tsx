@@ -1,8 +1,8 @@
 import React from 'react';
 import logo from '../assets/adaptica-logo-white.png';
-import facebookIcon from '../facebook.png';
-import linkedinIcon from '../linkedin.png';
-import instagramIcon from '../instagram.png';
+import facebookIcon from '../assets/facebook.png';
+import linkedinIcon from '../assets/linkedin.png';
+import instagramIcon from '../assets/instagram.png';
 
 export const Footer: React.FC = () => {
   return (
