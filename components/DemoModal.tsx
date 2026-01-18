@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { X, Smartphone, Check, Loader2 } from 'lucide-react';
 import { RetroButton } from './ui/RetroButton';
-import { supabase } from '../lib/supabase';
 
 interface DemoModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+// Helper: validate phone has at least 8 digits
+function isValidPhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 8;
 }
 
 export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
@@ -14,6 +19,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mount, setMount] = useState(false);
+  const [buttonLabel, setButtonLabel] = useState('ОБАДИ МИ СЕ');
 
   useEffect(() => {
     if (isOpen) {
@@ -27,30 +33,60 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  // Reset button label when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setButtonLabel('ОБАДИ МИ СЕ');
+      setErrorMessage(null);
+      setIsSuccess(false);
+    }
+  }, [isOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setErrorMessage(null);
 
+    // Client-side validation
+    if (!isValidPhone(phone)) {
+      setErrorMessage('Моля, въведете валиден номер.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setButtonLabel('Изпращам…');
+
     try {
-      const { error } = await supabase
-        .from('demo_submissions')
-        .insert([{ phone }]);
+      const response = await fetch('/api/test-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
 
-      if (error) throw error;
-
-      setIsSuccess(true);
-      setTimeout(() => {
-        onClose();
+      if (response.ok) {
+        // Success
+        setIsSuccess(true);
+        setButtonLabel('Готово ✓');
         setTimeout(() => {
-          setIsSuccess(false);
-          setPhone('');
-        }, 300);
-      }, 3000);
-
-    } catch (error: any) {
+          onClose();
+          setTimeout(() => {
+            setIsSuccess(false);
+            setPhone('');
+            setButtonLabel('ОБАДИ МИ СЕ');
+          }, 300);
+        }, 3000);
+      } else if (response.status === 429) {
+        // Rate limited
+        setErrorMessage('Прекалено много опити. Опитайте по-късно.');
+        setButtonLabel('ОБАДИ МИ СЕ');
+      } else {
+        // Other error
+        setErrorMessage('Грешка. Опитайте пак.');
+        setButtonLabel('ОБАДИ МИ СЕ');
+      }
+    } catch (error) {
       console.error('Error submitting demo request:', error);
-      setErrorMessage(error.message || 'Възникна грешка. Моля, опитайте отново.');
+      setErrorMessage('Грешка. Опитайте пак.');
+      setButtonLabel('ОБАДИ МИ СЕ');
     } finally {
       setIsSubmitting(false);
     }
@@ -126,14 +162,15 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
                   variant="green" // Using green for positive action in this clean UI
                   className="w-full justify-center !rounded-2xl !py-4 shadow-[0_10px_40px_-10px_rgba(62,124,103,0.4)] hover:shadow-[0_10px_40px_-5px_rgba(62,124,103,0.6)]"
                   size="md"
+                  disabled={isSubmitting}
                   onClick={() => { }} // Form handles submit
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <Loader2 size={18} className="animate-spin" /> Свързване...
+                      <Loader2 size={18} className="animate-spin" /> {buttonLabel}
                     </span>
                   ) : (
-                    "Обади ми се"
+                    buttonLabel
                   )}
                 </RetroButton>
               </form>
@@ -150,7 +187,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               <h3 className="text-3xl font-display font-bold text-white mb-3">Готово!</h3>
-              <p className="text-gray-400 font-medium">Телефонът ви ще позвъни след секунди.</p>
+              <p className="text-gray-400 font-medium">Обаждаме се до 30 секунди.</p>
             </div>
           )}
         </div>
